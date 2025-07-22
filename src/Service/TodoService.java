@@ -83,12 +83,12 @@ public class TodoService {
         }
     }
 
-    public List<TodoRepository> sortTaskLocalDate() {
+    public List<TodoRepository> sortTaskStatus() {
         Stream<TodoRepository> streamOfList = list.values().stream();
         return streamOfList.sorted(Comparator.comparing(TodoRepository::getTodoStatus).reversed()).toList();
     }
 
-    public List<TodoRepository> sortTaskStatus() {
+    public List<TodoRepository> sortTaskLocalDate() {
         Stream<TodoRepository> streamOfList = list.values().stream();
         return streamOfList.sorted(Comparator.comparing(TodoRepository::getTodoLocalDate).reversed()).toList();
     }
