@@ -1,11 +1,11 @@
 import Controller.TodoController;
 
 public class Main {
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         TodoController todoController = new TodoController();
-        try{
+        try {
             todoController.chooseAction();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Ошибка:" + e);
         }
     }

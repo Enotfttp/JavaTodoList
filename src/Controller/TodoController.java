@@ -9,19 +9,21 @@ import java.util.Scanner;
 
 public class TodoController {
 
-    private TodoService todoService;
+    private final TodoService todoService = new TodoService();
 
 
     public void chooseAction() throws Exception {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Выберете команду, которую вы хотите выполнить");
+        System.out.println("Напишите команду, которую вы хотите выполнить");
+        System.out.println("add | list | edit | delete | filter | sort | exit");
+        System.out.print("Команда: ");
+
         String str = scanner.next();
 
-
-        switch(str){
+        switch (str) {
             case "list":
-                 this.showTasks();
-                 break;
+                this.showTasks();
+                break;
             case "add":
                 this.addTask();
                 break;
@@ -38,105 +40,130 @@ public class TodoController {
                 this.sortTask();
                 break;
             case "exit":
-                 this.exitTask();
-                 break;
+                this.exitTask();
+                break;
             default:
-                 throw new Exception("Такого действия нет!:" + str);
+                this.chooseAction();
+                throw new Exception("Такого действия нет!: " + str);
         }
     }
 
 
-    final void showTasks() {
+    final void showTasks() throws Exception {
         System.out.println("Список задач:");
+        System.out.println("----------------------");
         todoService.showTasks();
+        this.chooseAction();
     }
 
 
-    final void addTask() {
+    final void addTask() throws Exception {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Введите название задачи:");
+        System.out.print("Введите название задачи: ");
         String name = scanner.nextLine();
-        System.out.println("Введите описание задачи:");
+        System.out.print("Введите описание задачи: ");
         String description = scanner.nextLine();
-        System.out.println("Введите год, месяц (число) и день (число), через пробел:");
-        int year = scanner.nextInt();
-        int month = scanner.nextInt();
-        int day = scanner.nextInt();
-        LocalDate localDate = LocalDate.of(year, month, day);
+        System.out.print("Введите год, месяц (число) и день (число), через пробел: ");
 
-        TodoRepository task = new TodoRepository(name, description, localDate);
-
-        todoService.addTask(task);
-    }
-
-    final void editTask() {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Введите номер задачи:");
-        Integer numberTask = scanner.nextInt();
-
-
-        System.out.println("Введите название задачи:");
-        String name = scanner.nextLine();
-        System.out.println("Введите описание задачи:");
-        String description = scanner.nextLine();
-        System.out.println("Введите год, месяц (число) и день (число), через пробел:");
-        int year = scanner.nextInt();
-        int month = scanner.nextInt();
-        int day = scanner.nextInt();
-        LocalDate localDate = LocalDate.of(year, month, day);
-
-        TodoRepository task = new TodoRepository(name, description, localDate);
-        try{
-            System.out.println(todoService.editTask(numberTask, task));
-        }catch(Exception e){
-            System.out.println(e);
+        try {
+            int year = scanner.nextInt();
+            int month = scanner.nextInt();
+            int day = scanner.nextInt();
+            LocalDate localDate = LocalDate.of(year, month, day);
+            TodoRepository task = new TodoRepository(name, description, localDate);
+            todoService.addTask(task);
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e);
+        } finally {
+            this.chooseAction();
         }
-
     }
-     final void deleteTask(){
-         Scanner scanner = new Scanner(System.in);
 
-         System.out.println("Введите номер задачи:");
-         Integer numberTask = scanner.nextInt();
-         try{
-             System.out.println(todoService.deleteTask(numberTask));
-         }catch(Exception e){
-             System.out.println(e);
-         }
-     }
+    final void editTask() throws Exception {
+        Scanner scanner = new Scanner(System.in);
 
-     final void filterTask(){
-         Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Введите номер задачи: ");
+            Integer numberTask = scanner.nextInt();
+            scanner.nextLine();
+            todoService.checkHasTask(numberTask);
 
-         System.out.println("Введите по какому статусы вы хотите фильтровать");
-         String status = scanner.nextLine();
+            System.out.println();
+            System.out.print("Введите название задачи: ");
+            String name = scanner.nextLine();
+            System.out.println();
+            System.out.print("Введите описание задачи: ");
+            String description = scanner.nextLine();
+            System.out.println();
+            System.out.println("Введите один из статусов");
+            System.out.println("TODO | IN_PROGRESS | DONE");
+            System.out.print("Новый статус: ");
+            String status = scanner.nextLine();
+            System.out.println();
+            System.out.print("Введите год, месяц (число) и день (число), через пробел: ");
+            int year = scanner.nextInt();
+            int month = scanner.nextInt();
+            int day = scanner.nextInt();
+            LocalDate localDate = LocalDate.of(year, month, day);
+            TodoRepository task = new TodoRepository(name, description, localDate, status);
+            todoService.editTask(numberTask, task);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            this.chooseAction();
+        }
+    }
 
-         try{
-             todoService.filterTask(status);
-         }catch (Exception e){
-             System.out.println(e);
-         }
+    final void deleteTask() throws Exception {
+        Scanner scanner = new Scanner(System.in);
 
-     }
+        try {
+            System.out.print("Введите номер задачи: ");
+            Integer numberTask = scanner.nextInt();
+            todoService.checkHasTask(numberTask);
+            System.out.println();
+            todoService.deleteTask(numberTask);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            this.chooseAction();
+        }
+    }
 
-     final void sortTask(){
-         Scanner scanner = new Scanner(System.in);
+    final void filterTask() throws Exception {
+        Scanner scanner = new Scanner(System.in);
 
-         System.out.println("Введите поле по которому хотите сортировать статус | дата");
-         String typeOfSort = scanner.nextLine();
+        System.out.print("Введите по какому статусы вы хотите фильтровать: ");
+        String status = scanner.nextLine();
+        System.out.println();
 
-         try{
-             todoService.sortTask(typeOfSort);
-         }catch (Exception e){
-             System.out.println(e);
-         }
-     }
+        try {
+            todoService.filterTask(status);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            this.chooseAction();
+        }
+    }
 
-     final void exitTask(){
-         System.out.println("Завершение работы");
-         todoService.exitTask();
-     }
+    final void sortTask() throws Exception {
+        Scanner scanner = new Scanner(System.in);
 
+        System.out.print("Введите поле по которому хотите сортировать статус | дата: ");
+        String typeOfSort = scanner.nextLine();
+        System.out.println();
 
+        try {
+            todoService.sortTask(typeOfSort);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            this.chooseAction();
+        }
+    }
+
+    final void exitTask() {
+        System.out.println("Завершение работы!");
+        todoService.exitTask();
+    }
 }

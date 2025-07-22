@@ -3,91 +3,97 @@ package Service;
 import Repository.EStatus;
 import Repository.TodoRepository;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class TodoService {
     static HashMap<Integer, TodoRepository> list = new HashMap<Integer, TodoRepository>();
 
-    public void showTasks(){
-           list.forEach((key, value) -> System.out.println(key + ": " + value));;
+    public void checkHasTask(Integer numberTask) throws Exception {
+        boolean hasTask = list.get(numberTask) != null;
+
+        if (!hasTask) {
+            throw new Exception("Такого номера не существует: " + numberTask);
+        }
     }
 
-    public TodoRepository addTask(TodoRepository elem){
-       return list.put(elem.hashCode(), elem);
+    public void showTasks() {
+        Optional.ofNullable(list).ifPresent(el -> el
+                .forEach((_, value) ->
+                        System.out.println(value + "\n" + "----------------------")
+                ));
     }
 
-    public List<TodoRepository> editTask(Integer numberTask, TodoRepository elem) throws Exception{
-        System.out.println("elem: " + elem);
-        TodoRepository curTodo = list.get(numberTask);
-        if(curTodo != null){
+    public void addTask(TodoRepository elem) {
+        Integer numberTask = elem.hashCode();
+
+        TodoRepository curTodo = new TodoRepository(elem.getTodoName(), elem.getTodoDescription(), elem.getTodoLocalDate(), numberTask);
+        list.put(numberTask, curTodo);
+    }
+
+    public void editTask(Integer numberTask, TodoRepository elem) throws Exception {
         Stream<TodoRepository> streamOfList = list.values().stream();
-       return streamOfList.map(val->{
-            if(!val.getTodoDescription().equals(elem.getTodoDescription())){
+
+        streamOfList.map(val -> {
+            if (!val.getTodoNumberTask().equals(numberTask)) return val;
+            if (!val.getTodoDescription().equals(elem.getTodoDescription()) && !elem.getTodoDescription().isEmpty()) {
                 val.setTodoDescription(elem.getTodoDescription());
             }
-            if(!val.getTodoName().equals(elem.getTodoName())){
+            if (!val.getTodoName().equals(elem.getTodoName()) && !elem.getTodoName().isEmpty()) {
                 val.setTodoName(elem.getTodoName());
             }
-            if(val.getTodoStatus() != elem.getTodoStatus()){
+            if (val.getTodoStatus() != elem.getTodoStatus() && !elem.getTodoStatus().toString().isEmpty()) {
                 val.setTodoStatus(elem.getTodoStatus());
             }
-            if(!val.getTodoLocalDate().equals(elem.getTodoLocalDate())){
+            if (!val.getTodoLocalDate().equals(elem.getTodoLocalDate())) {
                 val.setTodoLocalDate(elem.getTodoLocalDate());
             }
-        return val;
-        }).collect(Collectors.toList());
-        }else{
-            throw new Exception("Такого номера нет:" + numberTask);
-        }
 
+            return val;
+        }).toList();
     }
 
-    public TodoRepository deleteTask(Integer numberTask) throws Exception {
-        TodoRepository curTodo = list.get(numberTask);
-        if(curTodo != null) {
-           return list.remove(numberTask);
-        }else{
-            throw new Exception("Такого номера нет:" + numberTask);
-        }
+    public void deleteTask(Integer numberTask) throws Exception {
+        list.remove(numberTask);
     }
 
-    public List<TodoRepository> filterTask(String status) throws  IllegalArgumentException{
+    public void filterTask(String status) throws IllegalArgumentException {
         Stream<TodoRepository> streamOfList = list.values().stream();
-        try{
-            return streamOfList.filter(val->val.getTodoStatus() == EStatus.valueOf(status)).collect(Collectors.toList());
-        }catch(IllegalArgumentException e) {
-            throw new IllegalArgumentException("Данного статуса нет в списке статусов");
+
+        try {
+            streamOfList.filter(val -> val.getTodoStatus() == EStatus.valueOf(status))
+                    .forEach(value -> System.out.println(value + "\n" + "----------------------"));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Данного статуса нет в списке статусов!");
         }
     }
 
 
-    public List<TodoRepository> sortTask(String typeOfSort) throws Exception {
+    public void sortTask(String typeOfSort) throws Exception {
+        System.out.println("typeOfSort: " + typeOfSort);
 
-        if(typeOfSort == "дата"){
-          return  this.sortTaskLocalDate();
-        } else if(typeOfSort == "статус"){
-          return  this.sortTaskStatus();
-        }else{
-            throw new Exception("По данному параметру сортировки нет");
+        if (Objects.equals(typeOfSort, "дата")) {
+            this.sortTaskLocalDate().stream()
+                    .forEach(el -> System.out.println(el + "\n" + "----------------------"));
+        } else if (Objects.equals(typeOfSort, "статус")) {
+            this.sortTaskStatus().stream()
+                    .forEach(el -> System.out.println(el + "\n" + "----------------------"));
+        } else {
+            throw new Exception("По данному параметру сортировки нет: " + typeOfSort);
         }
-
     }
 
-    public List<TodoRepository> sortTaskLocalDate(){
+    public List<TodoRepository> sortTaskLocalDate() {
         Stream<TodoRepository> streamOfList = list.values().stream();
         return streamOfList.sorted(Comparator.comparing(TodoRepository::getTodoStatus).reversed()).toList();
     }
 
-    public List<TodoRepository> sortTaskStatus(){
+    public List<TodoRepository> sortTaskStatus() {
         Stream<TodoRepository> streamOfList = list.values().stream();
         return streamOfList.sorted(Comparator.comparing(TodoRepository::getTodoLocalDate).reversed()).toList();
     }
 
-    public void exitTask(){
+    public void exitTask() {
         System.exit(0);
     }
 }
