@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class TodoService {
-    static HashMap<Integer, TodoRepository> list = new HashMap<Integer, TodoRepository>();
+    private static final HashMap<Integer, TodoRepository> list = new HashMap<Integer, TodoRepository>();
 
     public void checkHasTask(Integer numberTask) throws Exception {
         boolean hasTask = list.get(numberTask) != null;
@@ -19,7 +19,7 @@ public class TodoService {
 
     public void showTasks() {
         Optional.ofNullable(list).ifPresent(el -> el
-                .forEach((_, value) ->
+                .forEach((key, value) ->
                         System.out.println(value + "\n" + "----------------------")
                 ));
     }
